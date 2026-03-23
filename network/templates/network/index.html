@@ -1,0 +1,23 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <div class="new_post mb-3" id="new_post">
+            <h2>New Post</h2>
+            <form class="d-block" action="{% url 'new_post' %}" method="post">
+                {% csrf_token %}
+                {{ new_post_form }}
+                <button type="submit" class="btn btn-light">Post</button>
+            </form>
+        </div>
+    {% endif %}
+    <div id="posts" class="d-flex flex-column"></div>
+    <div id="user"></div>
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %}
