@@ -98,5 +98,6 @@ def load_posts(request, posts):
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
-def load_user(request, user):
-    pass
+def load_user(request, user_id):
+    user.followers
+    user = User.objects.get(user_id)

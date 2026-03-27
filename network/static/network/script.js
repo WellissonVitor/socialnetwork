@@ -36,17 +36,51 @@ function load_posts(posts) {
     .then(data => {
         data.forEach(element => {
             let post = document.createElement('div');
-            post.classList.add("mb-3");
-            post.innerHTML = `
-                <div class="post align-content-center">
-                    <div class="mb-3">${element.poster}<br>On: ${element.timestamp}</div>
-                    <div>${element.content}</div>
-                </div>
-            `;
+            let user = document.createElement('div');
+            let timestamp = document.createElement('div');
+            let content = document.createElement('div');
+            let like = document.createElement('div');
+
+            user.classList.add('pointer');
+            user.innerHTML = element.poster;
+
+            timestamp.innerHTML = 'On: ' + element.timestamp;
+
+            content.classList.add('mb-3', 'mt-3');
+            content.innerHTML = element.content;
+
+            like.classList.add('white-space', 'like', 'pointer');
+            like.innerHTML = `${element.likes} <i class="bi bi-hand-thumbs-up-fill"></i>`;
+
+            post.classList.add("mb-3", "post", "align-content-center");
+            post.append(user, timestamp, content, like)
+
             document.querySelector('#posts').append(post);
+
+            user.addEventListener('click', () => {
+                load_user(element.id)
+            });
+
+            like.addEventListener('click', () => {
+                like_post(element.post_id)
+            });
         });
+
+        
     });
 
     // Push page to history and url
     history.pushState({posts: posts}, "", `${posts}`);
+}
+
+function load_user(user) {
+    fetch(`load_user/${user}`)
+    .then(response => response.json())
+    .then(data => {
+        
+    });
+}
+
+function like_post(post) {
+    fetch()
 }
