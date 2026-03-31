@@ -99,5 +99,15 @@ def load_posts(request, posts):
 
 
 def load_user(request, user_id):
-    user.followers
-    user = User.objects.get(user_id)
+    user = User.objects.get(pk=user_id)
+    followers = user.followers.all()
+    followings = user.following.all()
+
+    if not user:
+        return JsonResponse({"error": "Invalid user request."}, status=400)
+    
+    return JsonResponse({
+        "username": user.username,
+        "followers": len(followers),
+        "followings": len(followings)
+    })

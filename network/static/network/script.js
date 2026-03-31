@@ -58,7 +58,7 @@ function load_posts(posts) {
             document.querySelector('#posts').append(post);
 
             user.addEventListener('click', () => {
-                load_user(element.id)
+                load_user(element.poster_id)
             });
 
             like.addEventListener('click', () => {
@@ -77,7 +77,10 @@ function load_user(user) {
     fetch(`load_user/${user}`)
     .then(response => response.json())
     .then(data => {
+        document.querySelector('#user').style.display = 'block';
+        document.querySelector('#posts').style.display = 'none';
         
+
     });
 }
 
