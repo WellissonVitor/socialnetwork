@@ -50,7 +50,7 @@ function load_posts(posts) {
             user_pic.src = element.pic_url;
             user_pic.classList.add('user-pic', 'mb-1')
             username.innerHTML = element.poster;
-            username.classList.add('mb-1', 'pointer')
+            username.classList.add('mb-1', 'pointer','text-center');
             timestamp.innerHTML = 'On: ' + element.timestamp.replace(',', ',<br>');
             timestamp.style.fontSize = '9pt';
             timestamp.classList.add('text-center');
