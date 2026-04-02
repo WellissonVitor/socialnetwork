@@ -27,15 +27,19 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost", "localhost:8000",
+<<<<<<< HEAD
     "127.0.0.1", "0.0.0.0:8000"
+=======
+    "127.0.0.1",
+>>>>>>> 381333bc7ed22bae7c5c95d456ab2c7c90d1523f
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.127.0.0.1',
+    "https://*.127.0.0.1",
     "http://localhost", 
     "http://localhost:8000"
     "https://localhost", 
-    "https://localhost:8000"
+    "https://localhost:8000",
 ]
 
 # Application definition

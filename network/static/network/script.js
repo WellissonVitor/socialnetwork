@@ -22,8 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load posts based on link clicked
 function load_posts(posts) {
-    document.querySelector('#user').style.display = 'none';
-    document.querySelector('#posts').style.display = 'flex';
     if (document.querySelector('#new_post')) {
         document.querySelector('#new_post').style.display = 'block';
     }
@@ -36,51 +34,52 @@ function load_posts(posts) {
     .then(data => {
         data.forEach(element => {
             let post = document.createElement('div');
+
             let user = document.createElement('div');
+            let user_pic = document.createElement('img');
+            let username = document.createElement('div');
             let timestamp = document.createElement('div');
+
+            let body = document.createElement('div');
             let content = document.createElement('div');
             let like = document.createElement('div');
+            
+            post.classList.add('d-flex', 'post');
 
-            user.classList.add('pointer');
-            user.innerHTML = element.poster;
+            user.classList.add('post-user', 'd-flex', 'flex-column',  'justify-content-center', 'align-items-center');
+            user_pic.src = element.pic_url;
+            user_pic.classList.add('user-pic', 'mb-1')
+            username.innerHTML = element.poster;
+            username.classList.add('mb-1', 'pointer')
+            timestamp.innerHTML = 'On: ' + element.timestamp.replace(',', ',<br>');
+            timestamp.style.fontSize = '9pt';
+            timestamp.classList.add('text-center');
 
-            timestamp.innerHTML = 'On: ' + element.timestamp;
+            user.append(user_pic, username, timestamp);
 
-            content.classList.add('mb-3', 'mt-3');
+            body.classList.add('d-flex', 'flex-column', 'justify-content-center');
+            content.classList.add('mb-3');
             content.innerHTML = element.content;
-
             like.classList.add('white-space', 'like', 'pointer');
             like.innerHTML = `${element.likes} <i class="bi bi-hand-thumbs-up-fill"></i>`;
 
+            body.append(content, like);
+
             post.classList.add("mb-3", "post", "align-content-center");
-            post.append(user, timestamp, content, like)
+            post.append(user, body)
 
             document.querySelector('#posts').append(post);
-
-            user.addEventListener('click', () => {
-                load_user(element.id)
-            });
 
             like.addEventListener('click', () => {
                 like_post(element.post_id)
             });
-        });
-
-        
+        });      
     });
 
     // Push page to history and url
     history.pushState({posts: posts}, "", `${posts}`);
 }
 
-function load_user(user) {
-    fetch(`load_user/${user}`)
-    .then(response => response.json())
-    .then(data => {
-        
-    });
-}
-
 function like_post(post) {
-    fetch()
+    PUT()
 }

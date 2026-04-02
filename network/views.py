@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from faker import Faker
 
 from .forms import NewPostForm
 from .models import Follow, Like, Post, User
@@ -54,9 +55,13 @@ def register(request):
                 "message": "Passwords must match."
             })
 
+        # Generate a random user pic
+        fake = Faker()
+        pic_url = fake.image.avatar()
+
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(username, email, password, pic_url)
             user.save()
         except IntegrityError:
             return render(request, "network/register.html", {
@@ -99,5 +104,15 @@ def load_posts(request, posts):
 
 
 def load_user(request, user_id):
-    user.followers
-    user = User.objects.get(user_id)
+    user = User.objects.get(pk=user_id)
+    followers = user.followers.all()
+    followings = user.following.all()
+
+    if not user:
+        return JsonResponse({"error": "Invalid user request."}, status=400)
+    
+    return JsonResponse({
+        "username": user.username,
+        "followers": len(followers),
+        "followings": len(followings)
+    })

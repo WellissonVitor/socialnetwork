@@ -3,6 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    pic_url = models.URLField(default='https://avatars.githubusercontent.com/u/97165289')
     pass
 
 class Post(models.Model):
@@ -15,7 +16,8 @@ class Post(models.Model):
             'poster': self.poster.username,
             'poster_id': self.poster.id,
             'content': self.content,
-            'timestamp': self.timestamp.strftime("%b %d %Y, %I:%M %p")
+            'timestamp': self.timestamp.strftime("%b %d %Y, %I:%M %p"),
+            'pic_url': self.poster.pic_url
         }
 
 class Like(models.Model):
