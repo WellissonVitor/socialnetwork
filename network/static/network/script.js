@@ -12,27 +12,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // If requesting from following page load following posts, else load all posts
     const path = window.location.pathname.split('/');
     if (path[0] === "/posts" && path[1] === "following") {
-        load_posts('following')
+        load_posts('following', '1');
     }
     else {
-        load_posts('all')
+        load_posts('all', '1');
     }
 });
 
 
 // Load posts based on link clicked
-function load_posts(posts) {
+function load_posts(posts, page) {
     if (document.querySelector('#new_post')) {
         document.querySelector('#new_post').style.display = 'block';
     }
     // Clear posts before reloading
     document.querySelector('#posts').innerHTML = '';
 
+    // load pagination buttons
+    let previous = document.querySelector('#previous');
+    let previous_number = document.querySelector('#previous_number');
+    let current = document.querySelector('#previous');
+    let next_number = document.querySelector('#previous');
+    let next = document.querySelector('#previous');
+
+    
+
     // Load and append posts
-    fetch(`load_posts/${posts}`)
+    fetch(`load_posts/${posts}?page=${page}`)
     .then(response => response.json())
     .then(data => {
-        data.forEach(element => {
+        // Set pagination innerHTML and eventlistener
+        previous.innerHTML = 
+        console.log(data);
+
+        // Create and append posts
+        data.posts.forEach(element => {
             let post = document.createElement('div');
 
             let user = document.createElement('div');
@@ -77,9 +91,11 @@ function load_posts(posts) {
     });
 
     // Push page to history and url
-    history.pushState({posts: posts}, "", `${posts}`);
+    history.pushState({posts: posts, page:page}, "", `${posts}?page=${page}`);
 }
 
+
+// Likes Function
 function like_post(post) {
     PUT()
 }

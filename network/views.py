@@ -1,11 +1,12 @@
 import json
+import random
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from faker import Faker
 
 from .forms import NewPostForm
 from .models import Follow, Like, Post, User
@@ -56,12 +57,12 @@ def register(request):
             })
 
         # Generate a random user pic
-        fake = Faker()
-        pic_url = fake.image.avatar()
+        seed = random.randint(1, 100000)
+        pic_url = f"https://api.dicebear.com/7.x/avataaars/svg?seed={seed}"
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password, pic_url)
+            user = User.objects.create_user(username, email, password, pic_url=pic_url)
             user.save()
         except IntegrityError:
             return render(request, "network/register.html", {
@@ -89,18 +90,44 @@ def new_post(request):
     })
 
 
-def load_posts(request, posts):
-    if posts == "all":
-        posts = Post.objects.all().order_by('-timestamp')
-    elif posts == "following" and request.user.is_authenticated:
+def load_posts(request, posts_type):
+    if posts_type == "all":
+        # Get all posts
+        all_posts = Post.objects.all().order_by('-timestamp')
+
+    elif posts_type == "following" and request.user.is_authenticated:
         # Get the ids of the user followings
         following_users = Follow.objects.filter(follower=request.user).values_list("following")
 
-        posts = Post.objects.filter(poster__in=following_users).order_by("-timestamp")
+        # Get all following posts
+        all_posts = Post.objects.filter(poster__in=following_users).order_by("-timestamp")
+
     else:
         return JsonResponse({"error": "Invalid posts request."}, status=400)
+
+    # Paginates posts
+    paginated_posts = Paginator(all_posts, 10)
+
+    # Get page number from request url
+    page_num = request.GET.get('page', 1)
+
+    # Get the posts based on the requested page
+    posts_page = paginated_posts.get_page(page_num)
+
+    # Turn posts and pagination into a jsonresponse
+    response = {
+        "posts": [post.serialize() for post in posts_page],
+        "pagination": {
+            "current_page": posts_page.number,
+            "total_pages": paginated_posts.num_pages,
+            "has_next": posts_page.has_next(),
+            "has_previous": posts_page.has_previous(),
+            "next": posts_page.next_page_number() if posts_page.has_next() else None,
+            "previous": posts_page.previous_page_number() if posts_page.has_previous() else None,
+        }
+    }
     
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    return JsonResponse(response, safe=False)
 
 
 def load_user(request, user_id):

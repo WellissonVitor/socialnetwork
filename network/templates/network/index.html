@@ -18,5 +18,15 @@
         </div>
     {% endif %}
     <div id="posts" class="d-felx flex-column"></div>
+    <nav aria-label="Page navigation example" class="transparency">
+        <ul class="pagination justify-content-center"></li>
+                <li class="page-item"><a class="page-link text-bg-dark disabled" id="previous"></a></li>
+                <li class="page-item"><a class="page-link text-bg-dark disabled" id="previous_page"></a></li>
+                <li class="page-item"><span id="current" class="page-link text-bg-dark" id="current"></span></li>
+                <li class="page-item"><a class="page-link text-bg-dark disabled" id="next_page"></a></li>
+                <li class="page-item"><a class="page-link text-bg-dark disabled" id="total_pages"></a></li>
+                <li class="page-item"><a class="page-link text-bg-dark" id="next"></a></li>
+        </ul>
+    </nav>
     <script src="{% static 'network/script.js' %}"></script>
 {% endblock %}
