@@ -1,8 +1,8 @@
 // When site is loaded create event listener and load all posts
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector('#all').addEventListener('click', () => load_posts('all'));
+    document.querySelector('#all').addEventListener('click', () => load_posts('all', 1));
     if (document.querySelector('#following')) {
-        document.querySelector('#following').addEventListener('click', () => load_posts('following'));
+        document.querySelector('#following').addEventListener('click', () => load_posts('following', 1));
     }
     if (document.querySelector('#username')) {
         username = document.querySelector('#username').value;
@@ -31,18 +31,15 @@ function load_posts(posts, page) {
     // load pagination buttons
     let previous = document.querySelector('#previous');
     let previous_number = document.querySelector('#previous_number');
-    let current = document.querySelector('#previous');
-    let next_number = document.querySelector('#previous');
-    let next = document.querySelector('#previous');
-
-    
+    let current = document.querySelector('#current');
+    let next_number = document.querySelector('#next_number');
+    let total_pages = document.querySelector('#total_pages');
+    let next = document.querySelector('#next');
 
     // Load and append posts
     fetch(`load_posts/${posts}?page=${page}`)
     .then(response => response.json())
     .then(data => {
-        // Set pagination innerHTML and eventlistener
-        previous.innerHTML = 
         console.log(data);
 
         // Create and append posts
@@ -84,16 +81,85 @@ function load_posts(posts, page) {
 
             document.querySelector('#posts').append(post);
 
-            like.addEventListener('click', () => {
-                like_post(element.post_id)
-            });
-        });      
+            like.addEventListener('click', () => like_post(element.post_id));
+        });
+
+        // Set pagination innerHTML and eventlistener
+        if (!data.pagination.has_previous) {
+            previous.classList.add("disabled");
+            previous.classList.remove("active");
+            previous.removeEventListener('click', () => load_posts(posts, data.pagination.previous));
+
+            previous_number.innerHTML = data.pagination.current;
+            previous_number.classList.add("active");
+            previous_number.removeEventListener("click", () => load_posts(posts, data.pagination.previous));
+
+            current.innerHTML = data.pagination.next;
+            current.classList.remove("active");
+            current.addEventListener("click", () => load_posts(posts, data.pagination.next));
+
+            next_number.innerHTML = (data.pagination.next + 1);
+            next_number.classList.remove("active");
+            next_number.addEventListener("click", () => load_posts(posts, (data.pagination.next + 1)));
+
+            next.classList.remove("disabled");
+            next.addEventListener('click', () => load_posts(posts, (data.pagination.next + 1)));
+        }
+        else if (!data.pagination.has_next) {
+            previous.classList.remove("disabled");
+            previous.addEventListener('click', () => load_posts(posts, data.pagination.previous));
+
+            previous_number.innerHTML = (data.pagination.previous - 1);
+            previous_number.classList.remove("active");
+            previous_number.addEventListener("click", () => load_posts(posts, (data.pagination.previous - 1)));
+
+            current.innerHTML = data.pagination.previous;
+            current.classList.remove("active");
+            current.addEventListener("click", () => load_posts(posts, data.pagination.previous));
+
+            next_number.innerHTML = data.pagination.current;
+            next_number.classList.add("active");
+            next_number.addEventListener("click", () => load_posts(posts, data.pagination.current));
+
+            next.classList.add("disabled");
+            next.classList.remove("active");
+            next.removeEventListener('click', () => load_posts(posts, data.pagination.previous));
+        }
+        else {
+            previous.classList.remove("disabled");
+            previous.classList.remove("active");
+            previous.addEventListener('click', () => load_posts(posts, data.pagination.previous));
+
+            previous_number.innerHTML = data.pagination.previous;
+            previous_number.classList.remove("active");
+            previous_number.addEventListener("click", () => load_posts(posts, data.pagination.previous));
+
+            current.innerHTML = data.pagination.current;
+            current.classList.add("active");
+            current.addEventListener("click", () => load_posts(posts, data.pagination.current));
+
+            next_number.innerHTML = data.pagination.next;
+            next_number.classList.remove("active");
+            next_number.addEventListener("click", () => load_posts(posts, data.pagination.next));
+
+            next.classList.remove("disabled");
+            next.classList.remove("active");
+            next.addEventListener("click", () => load_posts(posts, data.pagination.next));
+        }
+
+        total_pages.innerHTML = data.pagination.total_pages;
     });
 
     // Push page to history and url
     history.pushState({posts: posts, page:page}, "", `${posts}?page=${page}`);
 }
 
+
+// Handles pagination
+
+function pagination(posts, page) {
+    
+}
 
 // Likes Function
 function like_post(post) {
