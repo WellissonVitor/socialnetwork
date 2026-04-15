@@ -118,7 +118,7 @@ def load_posts(request, posts_type):
     response = {
         "posts": [post.serialize() for post in posts_page],
         "pagination": {
-            "current_page": posts_page.number,
+            "current": posts_page.number,
             "total_pages": paginated_posts.num_pages,
             "has_next": posts_page.has_next(),
             "has_previous": posts_page.has_previous(),

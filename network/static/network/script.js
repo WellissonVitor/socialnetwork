@@ -28,126 +28,16 @@ function load_posts(posts, page) {
     // Clear posts before reloading
     document.querySelector('#posts').innerHTML = '';
 
-    // load pagination buttons
-    let previous = document.querySelector('#previous');
-    let previous_number = document.querySelector('#previous_number');
-    let current = document.querySelector('#current');
-    let next_number = document.querySelector('#next_number');
-    let total_pages = document.querySelector('#total_pages');
-    let next = document.querySelector('#next');
-
     // Load and append posts
     fetch(`load_posts/${posts}?page=${page}`)
     .then(response => response.json())
     .then(data => {
-        console.log(data);
+        
+        render_posts(data.posts);
+        pagination(data.pagination, posts);
 
-        // Create and append posts
-        data.posts.forEach(element => {
-            let post = document.createElement('div');
-
-            let user = document.createElement('div');
-            let user_pic = document.createElement('img');
-            let username = document.createElement('div');
-            let timestamp = document.createElement('div');
-
-            let body = document.createElement('div');
-            let content = document.createElement('div');
-            let like = document.createElement('div');
-            
-            post.classList.add('d-flex', 'post');
-
-            user.classList.add('post-user', 'd-flex', 'flex-column',  'justify-content-center', 'align-items-center');
-            user_pic.src = element.pic_url;
-            user_pic.classList.add('user-pic', 'mb-1')
-            username.innerHTML = element.poster;
-            username.classList.add('mb-1', 'pointer','text-center');
-            timestamp.innerHTML = 'On: ' + element.timestamp.replace(',', ',<br>');
-            timestamp.style.fontSize = '9pt';
-            timestamp.classList.add('text-center');
-
-            user.append(user_pic, username, timestamp);
-
-            body.classList.add('d-flex', 'flex-column', 'justify-content-center');
-            content.classList.add('mb-3');
-            content.innerHTML = element.content;
-            like.classList.add('white-space', 'like', 'pointer');
-            like.innerHTML = `${element.likes} <i class="bi bi-hand-thumbs-up-fill"></i>`;
-
-            body.append(content, like);
-
-            post.classList.add("mb-3", "post", "align-content-center");
-            post.append(user, body)
-
-            document.querySelector('#posts').append(post);
-
-            like.addEventListener('click', () => like_post(element.post_id));
-        });
-
-        // Set pagination innerHTML and eventlistener
-        if (!data.pagination.has_previous) {
-            previous.classList.add("disabled");
-            previous.classList.remove("active");
-            previous.removeEventListener('click', () => load_posts(posts, data.pagination.previous));
-
-            previous_number.innerHTML = data.pagination.current;
-            previous_number.classList.add("active");
-            previous_number.removeEventListener("click", () => load_posts(posts, data.pagination.previous));
-
-            current.innerHTML = data.pagination.next;
-            current.classList.remove("active");
-            current.addEventListener("click", () => load_posts(posts, data.pagination.next));
-
-            next_number.innerHTML = (data.pagination.next + 1);
-            next_number.classList.remove("active");
-            next_number.addEventListener("click", () => load_posts(posts, (data.pagination.next + 1)));
-
-            next.classList.remove("disabled");
-            next.addEventListener('click', () => load_posts(posts, (data.pagination.next + 1)));
-        }
-        else if (!data.pagination.has_next) {
-            previous.classList.remove("disabled");
-            previous.addEventListener('click', () => load_posts(posts, data.pagination.previous));
-
-            previous_number.innerHTML = (data.pagination.previous - 1);
-            previous_number.classList.remove("active");
-            previous_number.addEventListener("click", () => load_posts(posts, (data.pagination.previous - 1)));
-
-            current.innerHTML = data.pagination.previous;
-            current.classList.remove("active");
-            current.addEventListener("click", () => load_posts(posts, data.pagination.previous));
-
-            next_number.innerHTML = data.pagination.current;
-            next_number.classList.add("active");
-            next_number.addEventListener("click", () => load_posts(posts, data.pagination.current));
-
-            next.classList.add("disabled");
-            next.classList.remove("active");
-            next.removeEventListener('click', () => load_posts(posts, data.pagination.previous));
-        }
-        else {
-            previous.classList.remove("disabled");
-            previous.classList.remove("active");
-            previous.addEventListener('click', () => load_posts(posts, data.pagination.previous));
-
-            previous_number.innerHTML = data.pagination.previous;
-            previous_number.classList.remove("active");
-            previous_number.addEventListener("click", () => load_posts(posts, data.pagination.previous));
-
-            current.innerHTML = data.pagination.current;
-            current.classList.add("active");
-            current.addEventListener("click", () => load_posts(posts, data.pagination.current));
-
-            next_number.innerHTML = data.pagination.next;
-            next_number.classList.remove("active");
-            next_number.addEventListener("click", () => load_posts(posts, data.pagination.next));
-
-            next.classList.remove("disabled");
-            next.classList.remove("active");
-            next.addEventListener("click", () => load_posts(posts, data.pagination.next));
-        }
-
-        total_pages.innerHTML = data.pagination.total_pages;
+        // Push page to history and url
+        history.pushState({posts: posts, page:page}, "", `${posts}?page=${page}`);
     });
 
     // Push page to history and url
@@ -155,10 +45,105 @@ function load_posts(posts, page) {
 }
 
 
-// Handles pagination
+// Render Posts
+function render_posts(posts) {
+    const posts_container = document.querySelector('#posts');
 
-function pagination(posts, page) {
-    
+    // Create containers and append posts
+    posts.forEach(data => {
+        // Create containers
+        const post = document.createElement('div');
+        const user = document.createElement('div');
+        const body = document.createElement('div');
+
+        // Append User
+        const user_pic = document.createElement('img');
+        user_pic.src = data.pic_url;
+        user_pic.classList.add('user-pic', 'mb-1');
+
+        const username = document.createElement('div');
+        username.innerHTML = data.poster;
+        username.classList.add('mb-1', 'pointer', 'text-center');
+
+        const timestamp = document.createElement('div');
+        timestamp.innerHTML = 'On: ' + data.timestamp.replace(',', ',<br>');
+        timestamp.style.fontSize = '9pt';
+
+        user.classList.add('post-user', 'd-flex', 'flex-column', 'justify-content-center', 'align-items-center');
+        user.append(user_pic, username, timestamp);
+
+        // Append posts
+        const content = document.createElement('div');
+        content.innerHTML = data.content;
+        content.classList.add('mb-3');
+
+        const like = document.createElement('div');
+        like.innerHTML = `${data.likes} <i class="bi bi-hand-thumbs-up-fill"></i>`;
+        like.classList.add('white-space', 'like', 'pointer');
+
+        like.addEventListener('click', () => like_post(data.post_id));
+
+        body.classList.add('d-flex', 'flex-column', 'justify-content-center');
+        body.append(content, like);
+
+        post.classList.add('d-flex', 'post', 'mb-3', 'align-content-center');
+        post.append(user, body);
+
+        posts_container.append(post);
+    });
+}
+
+// handles pagination
+function pagination(pagination, posts) {
+    // Get buttons
+    let previous_button = document.querySelector('#previous');
+    let previous_number = document.querySelector('#previous_number');
+    let current = document.querySelector('#current');
+    let next_number = document.querySelector('#next_number');
+    let next_button = document.querySelector('#next');
+    let total_pages = document.querySelector('#total_pages');
+
+    // Erase previous event listeners and add fresh one if not disabled and has a function
+    const new_event = (target, event, disabled) => {
+        const newTarget = target.cloneNode(true);
+        target.parentNode.replaceChild(newTarget, target);
+
+        if (!disabled && event) {
+            newTarget.addEventListener("click", event);
+        }
+
+        return newTarget;
+    };
+
+    // Previous Button
+    previous_button = new_event(previous_button, () => load_posts(posts, pagination.previous), !pagination.has_previous);
+    previous_button.classList.toggle("disabled", !pagination.has_previous);
+
+    // Previous Number
+    previous_number.innerHTML = pagination.has_previous ? pagination.previous : pagination.current;
+    previous_number.classList.toggle("active", !pagination.has_previous);
+    previous_number = new_event(previous_number, pagination.has_previous ? () => load_posts(posts, pagination.previous) : null,
+        !pagination.has_previous
+    );
+
+    // Current
+    current.innerHTML = pagination.current;
+    current.classList.add("active");
+    current = new_event(current, () => load_posts(posts, pagination.current), false);
+
+    // Next Number
+    next_number.innerHTML = pagination.has_next ? pagination.next : pagination.current;
+    next_number.classList.toggle("active", !pagination.has_next);
+    next_number = new_event(next_number, pagination.has_next ? () => load_posts(posts, pagination.next) : null,
+        !pagination.has_next
+    );
+
+    // Next Button
+    next_button = new_event(next_button, () => load_posts(posts, pagination.next), !pagination.has_next);
+    next_button.classList.toggle("disabled", !pagination.has_next);
+
+    // Total Pages
+    total_pages.innerHTML = pagination.total_pages;
 }
 
 // Likes Function
