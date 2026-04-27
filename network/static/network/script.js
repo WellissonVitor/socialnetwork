@@ -1,21 +1,26 @@
 // When site is loaded create event listener and load all posts
 document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get("page");
     document.querySelector('#all').addEventListener('click', () => load_posts('all', 1));
+    document.querySelector('#logo').addEventListener('click', () => load_posts('all', 1));
+
     if (document.querySelector('#following')) {
         document.querySelector('#following').addEventListener('click', () => load_posts('following', 1));
     }
     if (document.querySelector('#username')) {
-        username = document.querySelector('#username').value;
+        const username = document.querySelector('#username').value;
         document.querySelector('#username').addEventListener('click', () => load_user(username));
     }
 
     // If requesting from following page load following posts, else load all posts
     const path = window.location.pathname.split('/');
+
     if (path[0] === "/posts" && path[1] === "following") {
-        load_posts('following', '1');
+        load_posts('following', page);
     }
     else {
-        load_posts('all', '1');
+        load_posts('all', page);
     }
 });
 
@@ -32,16 +37,17 @@ function load_posts(posts, page) {
     fetch(`load_posts/${posts}?page=${page}`)
     .then(response => response.json())
     .then(data => {
-        
         render_posts(data.posts);
         pagination(data.pagination, posts);
 
         // Push page to history and url
-        history.pushState({posts: posts, page:page}, "", `${posts}?page=${page}`);
+        history.pushState(page === "null" ? {posts: posts, page:1} : {posts: posts, page:page}, "",
+            page === "null" ? `${posts}?page=1` : `${posts}?page=${page}`
+        );
     });
 
     // Push page to history and url
-    history.pushState({posts: posts, page:page}, "", `${posts}?page=${page}`);
+    history.pushState(page === "null" ? {posts: posts, page:1} : {posts: posts, page:page}, "", `${posts}?page=${page}`);
 }
 
 
@@ -67,6 +73,7 @@ function render_posts(posts) {
 
         const timestamp = document.createElement('div');
         timestamp.innerHTML = 'On: ' + data.timestamp.replace(',', ',<br>');
+        timestamp.classList.add('text-center');
         timestamp.style.fontSize = '9pt';
 
         user.classList.add('post-user', 'd-flex', 'flex-column', 'justify-content-center', 'align-items-center');
@@ -97,13 +104,11 @@ function render_posts(posts) {
 function pagination(pagination, posts) {
     // Get buttons
     let previous_button = document.querySelector('#previous');
-    let previous_number = document.querySelector('#previous_number');
     let current = document.querySelector('#current');
-    let next_number = document.querySelector('#next_number');
     let next_button = document.querySelector('#next');
     let total_pages = document.querySelector('#total_pages');
 
-    // Erase previous event listeners and add fresh one if not disabled and has a function
+    // Erase previous event listeners and add fresh one if not disabled and a function is provided
     const new_event = (target, event, disabled) => {
         const newTarget = target.cloneNode(true);
         target.parentNode.replaceChild(newTarget, target);
@@ -115,32 +120,53 @@ function pagination(pagination, posts) {
         return newTarget;
     };
 
+    // Remove previous and next numbers
+    if (document.querySelector('#previous_number')) {
+        document.querySelector('#previous_number').remove();
+    };
+    if (document.querySelector('#next_number')) {
+        document.querySelector('#next_number').remove();
+    };
+
     // Previous Button
     previous_button = new_event(previous_button, () => load_posts(posts, pagination.previous), !pagination.has_previous);
     previous_button.classList.toggle("disabled", !pagination.has_previous);
+    previous_button.classList.toggle("pointer", pagination.has_previous);
 
     // Previous Number
-    previous_number.innerHTML = pagination.has_previous ? pagination.previous : pagination.current;
-    previous_number.classList.toggle("active", !pagination.has_previous);
-    previous_number = new_event(previous_number, pagination.has_previous ? () => load_posts(posts, pagination.previous) : null,
-        !pagination.has_previous
-    );
+    if (pagination.has_previous) {
+        let previous_number = document.createElement("span");
+
+        previous_number.id = "previous_number";
+        previous_number.innerHTML = pagination.previous;
+        previous_number.classList.add('page-link', 'text-bg-dark', 'pointer');
+        
+        document.querySelector("#previous_container").append(previous_number);
+
+        previous_number = new_event(previous_number, () => load_posts(posts, pagination.previous), false);
+    };    
 
     // Current
     current.innerHTML = pagination.current;
     current.classList.add("active");
-    current = new_event(current, () => load_posts(posts, pagination.current), false);
 
     // Next Number
-    next_number.innerHTML = pagination.has_next ? pagination.next : pagination.current;
-    next_number.classList.toggle("active", !pagination.has_next);
-    next_number = new_event(next_number, pagination.has_next ? () => load_posts(posts, pagination.next) : null,
-        !pagination.has_next
-    );
+    if (pagination.has_next) {
+        let next_number = document.createElement("span");
+
+        next_number.id = "next_number";
+        next_number.innerHTML = pagination.next;
+        next_number.classList.add('page-link', 'text-bg-dark', 'pointer');
+
+        document.querySelector("#next_container").append(next_number);
+
+        next_number = new_event(next_number, () => load_posts(posts, pagination.next), false);
+    };
 
     // Next Button
     next_button = new_event(next_button, () => load_posts(posts, pagination.next), !pagination.has_next);
     next_button.classList.toggle("disabled", !pagination.has_next);
+    next_button.classList.toggle("pointer", pagination.has_next);
 
     // Total Pages
     total_pages.innerHTML = pagination.total_pages;

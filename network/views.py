@@ -101,9 +101,13 @@ def load_posts(request, posts_type):
 
         # Get all following posts
         all_posts = Post.objects.filter(poster__in=following_users).order_by("-timestamp")
-
     else:
-        return JsonResponse({"error": "Invalid posts request."}, status=400)
+        try:
+            user_id = int(posts_type)
+            if posts_type not in User.objects.all():
+                return JsonResponse({"invalid_user": "User do not exists."}, status=400)
+        except:
+            return JsonResponse({"invalid_posts_request": "Invalid request."}, status=400)
 
     # Paginates posts
     paginated_posts = Paginator(all_posts, 10)
@@ -134,12 +138,3 @@ def load_user(request, user_id):
     user = User.objects.get(pk=user_id)
     followers = user.followers.all()
     followings = user.following.all()
-
-    if not user:
-        return JsonResponse({"error": "Invalid user request."}, status=400)
-    
-    return JsonResponse({
-        "username": user.username,
-        "followers": len(followers),
-        "followings": len(followings)
-    })
