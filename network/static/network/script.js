@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const page = params.get("page");
+
     document.querySelector('#all').addEventListener('click', () => load_posts('all', 1));
     document.querySelector('#logo').addEventListener('click', () => load_posts('all', 1));
 
@@ -16,10 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // If requesting from following page load following posts, else load all posts
     const path = window.location.pathname.split('/');
 
-    if (path[0] === "/posts" && path[1] === "following") {
+    if (path[1] === "following") {
         load_posts('following', page);
     }
-    else {
+    else if (path[1] === "all") {
         load_posts('all', page);
     }
 });
@@ -33,21 +34,32 @@ function load_posts(posts, page) {
     // Clear posts before reloading
     document.querySelector('#posts').innerHTML = '';
 
-    // Load and append posts
+    // Load and append posts if valid page
     fetch(`load_posts/${posts}?page=${page}`)
     .then(response => response.json())
     .then(data => {
-        render_posts(data.posts);
-        pagination(data.pagination, posts);
-
-        // Push page to history and url
-        history.pushState(page === "null" ? {posts: posts, page:1} : {posts: posts, page:page}, "",
-            page === "null" ? `${posts}?page=1` : `${posts}?page=${page}`
+        if (data.posts && data.pagination) {
+            document.querySelector("#error-container").classList.add("d-none")
+            document.querySelector("#error-container").classList.remove = "d-block";
+            if (validate_page(page, data.pagination.total_pages)) {
+                render_posts(data.posts);
+                pagination(data.pagination, posts);
+            }
+        }
+        else if (data.error) {
+            let error_container = document.querySelector("#error-container");
+            error_container.classList.add("d-block");
+            error_container.classList.remove("d-none");
+            error_container.innerHTML = data.error;
+        }
+        
+        // Updates history page
+        history.pushState(
+            { posts: posts, page: page },
+            "",
+            `${posts}?page=${page}`
         );
     });
-
-    // Push page to history and url
-    history.pushState(page === "null" ? {posts: posts, page:1} : {posts: posts, page:page}, "", `${posts}?page=${page}`);
 }
 
 
@@ -170,6 +182,18 @@ function pagination(pagination, posts) {
 
     // Total Pages
     total_pages.innerHTML = pagination.total_pages;
+}
+
+// Validates page and history
+function validate_page(page, total_pages) {
+    const parsed_page = parseInt(page, 10);
+
+    // Return false if invalid page
+    if (isNaN(parsed_page) || parsed_page < 1 || parsed_page > total_pages) {
+        return false;
+    }
+
+    return true;
 }
 
 // Likes Function

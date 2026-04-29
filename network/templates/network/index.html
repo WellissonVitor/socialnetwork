@@ -2,11 +2,6 @@
 {% load static %}
 
 {% block body %}
-    {% if error %}
-        <div class="alert alert-danger">
-            {{ error }}
-        </div>
-    {% endif %}
     {% if user.is_authenticated %}
         <div class="new_post mb-3" id="new_post">
             <h2>New Post</h2>
@@ -17,21 +12,23 @@
             </form>
         </div>
     {% endif %}
-    <div id="posts" class="d-flex flex-column">    </div>
-        {% if invalid_posts_request %}
-            <div class="mb-3 text-center alert-danger">{{ invalid_posts_request }}</div>
-        {% else %}
-            <nav aria-label="Page navigation example" class="transparency">
-                <ul class="pagination justify-content-center"></li>
-                        <li class="page-item"><span class="page-link text-bg-dark disabled" id="previous">Previous</span></li>
-                        <li class="page-item" id="previous_container"></li>
-                        <li class="page-item"><span id="current" class="page-link text-bg-dark" id="current"></span></li>
-                        <li class="page-item" id="next_container"></li>
-                        <li class="page-item page-link text-bg-dark">of</li>
-                        <li class="page-item"><span class="page-link text-bg-dark disabled" id="total_pages"></span></li>
-                        <li class="page-item"><span class="page-link text-bg-dark" id="next">Next</span></li>
-                </ul>
-            </nav>
-        {% endif %}
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+    <div id="error-container" class="alert alert-danger d-none"></div>
+    <div id="posts" class="d-flex flex-column"></div>
+    <nav aria-label="Page navigation example" class="transparency">
+        <ul class="pagination justify-content-center"></li>
+                <li class="page-item"><span class="page-link text-bg-dark disabled" id="previous">Previous</span></li>
+                <li class="page-item" id="previous_container"></li>
+                <li class="page-item"><span id="current" class="page-link text-bg-dark" id="current"></span></li>
+                <li class="page-item" id="next_container"></li>
+                <li class="page-item page-link text-bg-dark">of</li>
+                <li class="page-item"><span class="page-link text-bg-dark disabled" id="total_pages"></span></li>
+                <li class="page-item"><span class="page-link text-bg-dark" id="next">Next</span></li>
+        </ul>
+    </nav>
     <script src="{% static 'network/script.js' %}"></script>
 {% endblock %}

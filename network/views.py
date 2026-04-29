@@ -105,15 +105,25 @@ def load_posts(request, posts_type):
         try:
             user_id = int(posts_type)
             if posts_type not in User.objects.all():
-                return JsonResponse({"invalid_user": "User do not exists."}, status=400)
+                return JsonResponse({"error": "User does not exist."})
         except:
-            return JsonResponse({"invalid_posts_request": "Invalid request."}, status=400)
+            return JsonResponse({"error": "Invalid request."})
 
     # Paginates posts
     paginated_posts = Paginator(all_posts, 10)
 
     # Get page number from request url
-    page_num = request.GET.get('page', 1)
+    try:
+        page_num = int(request.GET.get('page', 1))
+    except:
+        return JsonResponse({
+            "error": "Invalid page."
+        })
+        
+    if page_num not in paginated_posts.page_range:
+        return JsonResponse({
+            "error": "Invalid page."
+        })
 
     # Get the posts based on the requested page
     posts_page = paginated_posts.get_page(page_num)
