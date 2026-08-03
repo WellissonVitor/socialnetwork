@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and new_post_form %}
         <div class="new_post mb-3" id="new_post">
             <h2>New Post</h2>
             <form class="d-block" action="{% url 'new_post' %}" method="post">
@@ -12,23 +12,49 @@
             </form>
         </div>
     {% endif %}
-    {% if error %}
+    {% if message %}
         <div class="alert alert-danger">
-            {{ error }}
+            {{ message }}
+        </div>
+    {% elif posts %}
+        <div id="posts" class="d-flex flex-column">
+            {% for post in posts %}
+                <div class="post mb-3">
+                    <div class="post-user d-flex flex-column" justify-content-center align-itens-center">
+                        <img class="mb-1 m-auto user-pic" src="{{ post.pic_url }}" alt="user profile pic">
+                        <a class="mb-1 pointer text-center" href="{% url 'load_user' post.poster %}">{{ post.poster }}</a>
+                        <div class="text-center">On: {{ post.timestamp }}</div>
+                    </div>
+                    <div>
+                        <div class="mb-3 content">
+                            {{ post.content }}
+                        </div>
+                        <div class="white_space like pointer pb-3">
+                            {{ post.like }} <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="pagination-container">
+            <nav>
+                <ul class="pagination">
+                    {% if pagination.has_previous %}
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.previous %}">Previous</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.previous %}">{{ pagination.previous }}</a></li>
+                    {% else %}
+                        <li class="page-item"><span class="page-link text-bg-dark">Previous</span></li>
+                    {% endif %}
+                    <li class="page-item"><span class="page-link text-bg-dark">{{ pagination.current }}</span></li>
+                    {% if pagination.has_next %}
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.next %}">{{ pagination.next }}</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.next %}">Next</a></li>
+                    {% else %}
+                        <li class="page-item"><span class="page-link text-bg-dark">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     {% endif %}
-    <div id="error-container" class="alert alert-danger d-none"></div>
-    <div id="posts" class="d-flex flex-column"></div>
-    <nav aria-label="Page navigation example" class="transparency">
-        <ul class="pagination justify-content-center"></li>
-                <li class="page-item"><span class="page-link text-bg-dark disabled" id="previous">Previous</span></li>
-                <li class="page-item" id="previous_container"></li>
-                <li class="page-item"><span id="current" class="page-link text-bg-dark" id="current"></span></li>
-                <li class="page-item" id="next_container"></li>
-                <li class="page-item page-link text-bg-dark">of</li>
-                <li class="page-item"><span class="page-link text-bg-dark disabled" id="total_pages"></span></li>
-                <li class="page-item"><span class="page-link text-bg-dark" id="next">Next</span></li>
-        </ul>
-    </nav>
     <script src="{% static 'network/script.js' %}"></script>
 {% endblock %}

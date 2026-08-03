@@ -4,6 +4,7 @@ from django.db import models
 
 class User(AbstractUser):
     pic_url = models.URLField(default='https://avatars.githubusercontent.com/u/97165289')
+    creation_date = models.DateTimeField(auto_now_add=True)
     pass
 
 class Post(models.Model):

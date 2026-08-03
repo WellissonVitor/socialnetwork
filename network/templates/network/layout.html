@@ -12,10 +12,9 @@
         <title>{% block title %}Social Network{% endblock %}</title>
     </head>
     <body>
-
         <nav class="navbar navbar-expand-lg mb-3">
             <div class="container">
-                <a class="navbar-brand" id="logo">Network</a>
+                <a class="navbar-brand" href="{% url 'index' 'all' 1 %}">Network</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
@@ -27,11 +26,11 @@
                             </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" id="all">All Posts</a>
+                            <a class="nav-link" id="all" href="{% url 'index' 'all' 1 %}">All Posts</a>
                         </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link" id="following">Following</a>
+                                <a class="nav-link" id="following" href="{% url 'index' 'following' 1 %}">Following</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

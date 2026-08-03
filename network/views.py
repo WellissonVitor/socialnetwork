@@ -12,10 +12,9 @@ from .forms import NewPostForm
 from .models import Follow, Like, Post, User
 
 
-def index(request, posts=None):
-    return render(request, "network/index.html", {
-        'new_post_form': NewPostForm
-    })
+def index(request, posts_type=all, page_num=1):
+    context = load_posts(request, posts_type, page_num)
+    return render(request, "network/index.html", context)
 
 
 def login_view(request):
@@ -29,7 +28,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("index", args=("all", 1)))
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
@@ -40,7 +39,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("index", args=("all", 1)))
 
 
 def register(request):
@@ -83,53 +82,78 @@ def new_post(request):
             new_post.poster = request.user
             new_post.save()
         
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("index", args=("all", 1)))
 
     return render(request, "network/index.html", {
-        "error": "Invalid request."
+        "message": "Invalid request."
     })
 
 
-def load_posts(request, posts_type):
-    if posts_type == "all":
-        # Get all posts
-        all_posts = Post.objects.all().order_by('-timestamp')
+def load_user(request, username, page_num=1):
+    if username == None:
+        return render(request, "network/profile.html", {
+        "message": "Invalid user"
+    })
 
-    elif posts_type == "following" and request.user.is_authenticated:
-        # Get the ids of the user followings
-        following_users = Follow.objects.filter(follower=request.user).values_list("following")
+    # Get user data and serialize it
+    user = User.objects.get(username=username)
 
-        # Get all following posts
-        all_posts = Post.objects.filter(poster__in=following_users).order_by("-timestamp")
-    else:
-        try:
-            user_id = int(posts_type)
-            if posts_type not in User.objects.all():
-                return JsonResponse({"error": "User does not exist."})
-        except:
-            return JsonResponse({"error": "Invalid request."})
+    # Get user follower, following and posts
+    followers = len(user.followers.all())
+    followings = len(user.following.all())
+
+
+    return render(request, "network/profile.html", {
+        "user": {
+            "username": user.username,
+            "pic_url": user.pic_url,
+            "member_since": user.creation_date,
+        },
+        "followers": followers,
+        "followings": followings,
+        "user_posts": load_posts(request, posts_type=username, page_num=1)
+    })
+
+
+def load_posts(request, posts_type="all", page_num=1):
+    # Get user posts if requesting from user page
+    try:
+        user = User.objects.get(username=posts_type)
+
+        all_posts = Post.objects.filter(poster=user).order_by("-timestamp")
+    # Get all or following posts
+    except:
+        if posts_type == "all":
+            # Get all posts
+            all_posts = Post.objects.all().order_by("-timestamp")
+
+        elif posts_type == "following":
+            if request.user.is_authenticated:
+                # Get the ids of user followings
+                following_users = Follow.objects.filter(follower=request.user).values_list("following")
+        
+                # Get all following posts
+                all_posts = Post.objects.filter(poster__in=following_users).order_by("-timestamp")
+            else:
+                return {"message": "Login required."}
+        else:
+            return {
+                "message": "Invalid request."
+            }
 
     # Paginates posts
     paginated_posts = Paginator(all_posts, 10)
-
-    # Get page number from request url
-    try:
-        page_num = int(request.GET.get('page', 1))
-    except:
-        return JsonResponse({
-            "error": "Invalid page."
-        })
-        
+    
     if page_num not in paginated_posts.page_range:
-        return JsonResponse({
-            "error": "Invalid page."
-        })
+        return {
+            "message": "Invalid page."
+        }
 
     # Get the posts based on the requested page
     posts_page = paginated_posts.get_page(page_num)
-
-    # Turn posts and pagination into a jsonresponse
-    response = {
+    
+    return {
+        "new_post_form": NewPostForm,
         "posts": [post.serialize() for post in posts_page],
         "pagination": {
             "current": posts_page.number,
@@ -138,13 +162,6 @@ def load_posts(request, posts_type):
             "has_previous": posts_page.has_previous(),
             "next": posts_page.next_page_number() if posts_page.has_next() else None,
             "previous": posts_page.previous_page_number() if posts_page.has_previous() else None,
-        }
+        },
+        "type": posts_type
     }
-    
-    return JsonResponse(response, safe=False)
-
-
-def load_user(request, user_id):
-    user = User.objects.get(pk=user_id)
-    followers = user.followers.all()
-    followings = user.following.all()

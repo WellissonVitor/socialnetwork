@@ -1,0 +1,65 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+    <div class="profile">
+        <div class="profile-pic">
+            <img src="{{ user.pic_url }}" alt="user profile pic">
+        </div>
+        <div class="profile-info">
+            <div class="user-info">
+                <div>Username: {{ user.username }}</div>
+                <div>Member since: {{ user.member_since|date:"d/m/Y" }}</div>
+            </div>
+            <div class="follows-info">
+                <div>Follows: </div>
+                <div>Following: </div>
+            </div>
+        </div>
+    </div>
+    {% if message %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% elif user_posts.posts %}
+        <div id="posts" class="d-flex flex-column">
+            {% for post in user_posts.posts %}
+                <div class="post mb-3">
+                    <div class="post-user d-flex flex-column justify-content-center align-itens-center">
+                        <img class="mb-1 m-auto user-pic" src="{{ post.pic_url }}" alt="user profile pic">
+                        <div class="text-center">On: {{ post.timestamp }}</div>
+                    </div>
+                    <div>
+                        <div class="mb-3 content">
+                            {{ post.content }}
+                        </div>
+                        <div class="white_space like pointer pb-3">
+                            {{ post.like }} <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="pagination-container">
+            <nav>
+                <ul class="pagination">
+                    {% if user_posts.pagination.has_previous %}
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type user_posts.pagination.previous %}">Previous</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type user_posts.pagination.previous %}">{{ pagination.previous }}</a></li>
+                    {% else %}
+                        <li class="page-item"><span class="page-link text-bg-dark">Previous</span></li>
+                    {% endif %}
+                    <li class="page-item"><span class="page-link text-bg-dark">{{ user_posts.pagination.current }}</span></li>
+                    {% if user_posts.pagination.has_next %}
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type user_posts.pagination.next %}">{{ pagination.next }}</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type user_posts.pagination.next %}">Next</a></li>
+                    {% else %}
+                        <li class="page-item"><span class="page-link text-bg-dark">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %}
