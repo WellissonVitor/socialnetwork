@@ -12,7 +12,11 @@ from .forms import NewPostForm
 from .models import Follow, Like, Post, User
 
 
-def index(request, posts_type=all, page_num=1):
+def index(request):
+    return HttpResponseRedirect(reverse(posts, args=['all',1]))
+
+
+def posts(request, posts_type="all", page_num=1):
     context = load_posts(request, posts_type, page_num)
     return render(request, "network/index.html", context)
 
@@ -28,7 +32,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index", args=("all", 1)))
+            return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
@@ -39,7 +43,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index", args=("all", 1)))
+    return HttpResponseRedirect(reverse("index"))
 
 
 def register(request):
@@ -82,7 +86,7 @@ def new_post(request):
             new_post.poster = request.user
             new_post.save()
         
-        return HttpResponseRedirect(reverse("index", args=("all", 1)))
+        return HttpResponseRedirect(reverse("index"))
 
     return render(request, "network/index.html", {
         "message": "Invalid request."
@@ -99,17 +103,17 @@ def load_user(request, username, page_num=1):
     user = User.objects.get(username=username)
 
     # Get user follower, following and posts
-    followers = len(user.followers.all())
+    follows = len(user.followers.all())
     followings = len(user.following.all())
 
 
     return render(request, "network/profile.html", {
-        "user": {
+        "user_info": {
             "username": user.username,
             "pic_url": user.pic_url,
             "member_since": user.creation_date,
         },
-        "followers": followers,
+        "follows": follows,
         "followings": followings,
         "user_posts": load_posts(request, posts_type=username, page_num=1)
     })
@@ -165,3 +169,5 @@ def load_posts(request, posts_type="all", page_num=1):
         },
         "type": posts_type
     }
+
+#@login_required(login_url=("index"))

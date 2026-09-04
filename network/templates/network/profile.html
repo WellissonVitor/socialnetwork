@@ -5,17 +5,22 @@
 {% block body %}
     <div class="profile">
         <div class="profile-pic">
-            <img src="{{ user.pic_url }}" alt="user profile pic">
+            <img src="{{ user_info.pic_url }}" alt="user profile pic">
         </div>
         <div class="profile-info">
             <div class="user-info">
-                <div>Username: {{ user.username }}</div>
-                <div>Member since: {{ user.member_since|date:"d/m/Y" }}</div>
+                <div>Username: {{ user_info.username }}</div>
+                <div>Member since: {{ user_info.member_since|date:"d/m/Y" }}</div>
             </div>
             <div class="follows-info">
-                <div>Follows: </div>
-                <div>Following: </div>
+                <div>Follows: {{ follows }}</div>
+                <div>Following: {{ followings }} </div>
             </div>
+            {% if user.is_authenticated and user.username != user_info.username %}
+                <div class="follow">
+                    <button id="follow-btn" class="btn btn-light">Follow</button>
+                </div>
+            {% endif %}
         </div>
     </div>
     {% if message %}
@@ -26,15 +31,23 @@
         <div id="posts" class="d-flex flex-column">
             {% for post in user_posts.posts %}
                 <div class="post mb-3">
-                    <div class="post-user d-flex flex-column justify-content-center align-itens-center">
+                    <div class="post-user d-flex flex-column" justify-content-center align-itens-center">
                         <img class="mb-1 m-auto user-pic" src="{{ post.pic_url }}" alt="user profile pic">
+                        <a class="mb-1 pointer text-center" href="{% url 'load_user' post.poster %}">{{ post.poster }}</a>
                         <div class="text-center">On: {{ post.timestamp }}</div>
                     </div>
-                    <div>
+                    <div class="post-content">
                         <div class="mb-3 content">
                             {{ post.content }}
                         </div>
-                        <div class="white_space like pointer pb-3">
+                        {% if user.is_authenticated and user.username == post.poster %}
+                            <div id="edit-post">
+                                <button class="btn btn-light">
+                                    Edit
+                                </button>
+                            </div>
+                        {% endif %}
+                        <div class="like pointer pb-3">
                             {{ post.like }} <i class="bi bi-hand-thumbs-up-fill"></i>
                         </div>
                     </div>

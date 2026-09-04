@@ -56,15 +56,29 @@ body {
     margin-right: 1em;
 }
 
+.post-content {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.content {
+    width: 90%;
+}
+
+.edit-post {
+    width: 10%;
+}
+
+.like {
+    width: 100%;
+}
+
 .user-pic {
     width: 4em;
     height: 4em;
     border-radius: 4em;
     object-fit: cover;
-}
-
-.white-space {
-    white-space: pre;
 }
 
 .transparency {
@@ -85,16 +99,24 @@ body {
     margin-bottom: 1em;
     width: 100%;
     padding: 3em;
+    font-weight: 600;
+    border-radius: 15px;
+    backdrop-filter: blur(2px);
+    color: white;
+    border: 1px solid rgb(255, 255, 255, .1);
+    box-shadow: 5px 5px  10px rgba(0,0,0,0.5);
     height: auto;
 }
 
 .profile-info {
     padding: 3em;
     display: flex;
+    flex-wrap: wrap;
 }
 
 .user-info, .follows-info {
-    margin: auto;
+    width: 50%;
+    padding: 2em;
 }
 
 .profile-pic, .profile-pic img {
@@ -103,4 +125,8 @@ body {
     border-radius: 13em;
     object-fit: cover;
     margin: auto;
+}
+
+.follow {
+    padding: 0 2em;
 }

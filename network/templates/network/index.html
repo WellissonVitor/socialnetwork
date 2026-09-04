@@ -25,13 +25,21 @@
                         <a class="mb-1 pointer text-center" href="{% url 'load_user' post.poster %}">{{ post.poster }}</a>
                         <div class="text-center">On: {{ post.timestamp }}</div>
                     </div>
-                    <div>
+                    <div class="post-content">
                         <div class="mb-3 content">
                             {{ post.content }}
                         </div>
-                        <div class="white_space like pointer pb-3">
-                            {{ post.like }} <i class="bi bi-hand-thumbs-up-fill"></i>
-                        </div>
+                        {% if user.is_authenticated and user.username == post.poster %}
+                            <div id="edit-post">
+                                <button class="btn btn-light">
+                                    Edit
+                                </button>
+                            </div>
+                        {% endif %}
+                        <button class="like pointer pb-3 post-like" data-id="{{ post.post_id }}">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <span>{{ post.like }}</span>
+                        </button>
                     </div>
                 </div>
             {% endfor %}
@@ -40,15 +48,15 @@
             <nav>
                 <ul class="pagination">
                     {% if pagination.has_previous %}
-                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.previous %}">Previous</a></li>
-                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.previous %}">{{ pagination.previous }}</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'posts' type pagination.previous %}">Previous</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'posts' type pagination.previous %}">{{ pagination.previous }}</a></li>
                     {% else %}
                         <li class="page-item"><span class="page-link text-bg-dark">Previous</span></li>
                     {% endif %}
                     <li class="page-item"><span class="page-link text-bg-dark">{{ pagination.current }}</span></li>
                     {% if pagination.has_next %}
-                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.next %}">{{ pagination.next }}</a></li>
-                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'index' type pagination.next %}">Next</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'posts' type pagination.next %}">{{ pagination.next }}</a></li>
+                        <li class="page-item"><a class="page-link text-bg-dark" href="{% url 'posts' type pagination.next %}">Next</a></li>
                     {% else %}
                         <li class="page-item"><span class="page-link text-bg-dark">Next</a></li>
                     {% endif %}
